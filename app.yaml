@@ -1,0 +1,16 @@
+runtime: nodejs16  # Asegúrate de usar la versión de Node.js que coincida con tu entorno de desarrollo local.
+
+env: standard  # Utiliza el entorno estándar para aplicaciones Node.js.
+
+instance_class: F1  # Clase de instancia predeterminada para App Engine.
+
+automatic_scaling:
+  min_idle_instances: 1  # Mínimo de instancias inactivas para mantener en espera.
+  max_idle_instances: automatic  # App Engine decidirá cuántas instancias inactivas mantener en función del tráfico.
+  min_pending_latency: automatic  # Latencia mínima antes de que se inicie una nueva instancia.
+  max_pending_latency: automatic  # Latencia máxima antes de que se inicie una nueva instancia.
+
+# Variables de entorno que tu aplicación necesita para funcionar.
+env_variables:
+  NODE_ENV: 'production'
+  # Asegúrate de agregar aquí cualquier otra variable de entorno que tu aplicación necesite.
