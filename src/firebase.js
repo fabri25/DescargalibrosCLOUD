@@ -1,42 +1,35 @@
-require('dotenv').config();
-
-const { initializeApp, applicationDefault, cert } = require("firebase-admin/app");
-const { getFirestore } = require("firebase-admin/firestore");
+const admin = require('firebase-admin');
 const { SecretManagerServiceClient } = require('@google-cloud/secret-manager');
 
 const client = new SecretManagerServiceClient();
 
 async function getFirebaseCredentials() {
-  if (process.env.NODE_ENV === 'production') {
-    // En producción, obtén las credenciales de Secret Manager
-    const [version] = await client.accessSecretVersion({
-      name: 'projects/descargalibros1/secrets/firebase-service-account/versions/latest',
-    });
+  const [version] = await client.accessSecretVersion({
+    name: 'projects/descargalibros1/secrets/firebase-service-account/versions/latest',
+  });
+  const credentials = JSON.parse(version.payload.data.toString());
+  return credentials;
+}
 
-    const credentials = JSON.parse(version.payload.data.toString('utf8'));
-    return cert(credentials);
-  } else {
-    // En desarrollo, usa las credenciales locales
-    // Asegúrate de que tu archivo .env local tenga la variable GOOGLE_APPLICATION_CREDENTIALS
-    // que apunte al archivo de credenciales de Firebase descargado
-    const {initializeApp, applicationDefault} =  require("firebase-admin/app")
-    const {getFirestore} =  require("firebase-admin/firestore");
-    initializeApp({
-        credential: applicationDefault()
-    })
-    const db = getFirestore();
-    module.exports = {
-    db,
-    };
+async function initializeFirebaseApp() {
+  if (admin.apps.length === 0) { // Solo inicializa si no hay instancias ya inicializadas
+    try {
+      const firebaseCredentials = await getFirebaseCredentials();
+      admin.initializeApp({
+        credential: admin.credential.cert(firebaseCredentials),
+      });
+    } catch (error) {
+      console.error('Error initializing Firebase Admin SDK:', error);
+      throw error; // Lanzar el error para manejarlo más arriba en la pila
+    }
   }
 }
 
-initializeApp({
-    credential: applicationDefault()
-})
-const db = getFirestore();
-module.exports = {
-db,
-};
+// Llama a la función para inicializar Firebase al momento de requerir este módulo
+// Esto asegura que Firebase se inicialice antes de usarlo en otros módulos.
+initializeFirebaseApp().catch(console.error);
 
+// Exporta las funciones de Firebase si las necesitas en otros archivos
+const db = admin.firestore();
 
+module.exports = { db }; // exporta db para usarlo en otro lugar

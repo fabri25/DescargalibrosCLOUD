@@ -1,0 +1,20 @@
+runtime: nodejs20 # Asegúrate de usar la versión de Node.js que corresponde a tu aplicación
+instance_class: F2 # Ajusta esto según las necesidades de tu aplicación
+
+env_variables:
+  NODE_ENV: 'production' # Aquí puedes poner todas las variables de entorno que necesitas
+
+handlers:
+# Manejador para archivos estáticos en la carpeta public
+- url: /static
+  static_dir: public/static
+  secure: always # Opcional: puedes requerir que todos los accesos sean por HTTPS
+
+
+# Manejador de rutas dinámicas, todas las demás solicitudes serán procesadas por tu aplicación Node.js
+- url: /.*
+  script: auto
+  secure: always
+
+automatic_scaling:
+  target_cpu_utilization: 0.65 # Ajusta esto según lo que consideres óptimo para tu aplicación
